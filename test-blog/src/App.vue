@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { usePostsStore } from "./stores/posts";
 
 const maxLength = 140;
@@ -8,20 +8,24 @@ const postsStore = usePostsStore();
 
 const charCount = computed(() => draft.value.length);
 
-function publish() {
-  const post = postsStore.addPost(draft.value);
+onMounted(() => {
+  postsStore.fetchPosts();
+});
+
+async function publish() {
+  const post = await postsStore.addPost(draft.value);
   if (post) {
     draft.value = "";
   }
 }
 
-function clearAll() {
+async function clearAll() {
   if (postsStore.count === 0) {
     return;
   }
 
   if (window.confirm("确定要清空所有动态吗？")) {
-    postsStore.clearPosts();
+    await postsStore.clearPosts();
   }
 }
 
@@ -68,7 +72,7 @@ function formatTime(isoString) {
       </div>
 
       <div v-if="postsStore.count === 0" class="emptyState">
-        还没有动态，先发布第一条吧。
+        {{ postsStore.isLoading ? "加载中..." : "还没有动态，先发布第一条吧。" }}
       </div>
 
       <ul v-else class="postList">

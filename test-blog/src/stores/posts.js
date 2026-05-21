@@ -1,55 +1,65 @@
 import { defineStore } from "pinia";
-
-export const STORAGE_KEY = "test-blog-posts";
-
-function readStoredPosts() {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    const posts = value ? JSON.parse(value) : [];
-    return Array.isArray(posts) ? posts : [];
-  } catch {
-    return [];
-  }
-}
-
-function createId() {
-  if (globalThis.crypto?.randomUUID) {
-    return globalThis.crypto.randomUUID();
-  }
-
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+import {
+  createPost,
+  deletePosts,
+  fetchPosts as fetchPostsFromApi,
+} from "../api/posts";
 
 export const usePostsStore = defineStore("posts", {
   state: () => ({
-    posts: readStoredPosts(),
+    posts: [],
+    isLoading: false,
+    isSaving: false,
+    error: null,
   }),
   getters: {
     count: (state) => state.posts.length,
   },
   actions: {
-    persist() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.posts));
+    async fetchPosts() {
+      this.isLoading = true;
+      this.error = null;
+
+      try {
+        const posts = await fetchPostsFromApi();
+        this.posts = posts;
+        return posts;
+      } catch (error) {
+        this.error = error;
+        return [];
+      } finally {
+        this.isLoading = false;
+      }
     },
-    addPost(rawContent) {
+    async addPost(rawContent) {
       const content = rawContent.trim();
       if (!content) {
         return null;
       }
 
-      const post = {
-        id: createId(),
-        content,
-        createdAt: new Date().toISOString(),
-      };
+      this.isSaving = true;
+      this.error = null;
 
-      this.posts.unshift(post);
-      this.persist();
-      return post;
+      try {
+        const post = await createPost(content);
+        this.posts.unshift(post);
+        return post;
+      } catch (error) {
+        this.error = error;
+        return null;
+      } finally {
+        this.isSaving = false;
+      }
     },
-    clearPosts() {
-      this.posts = [];
-      this.persist();
+    async clearPosts() {
+      this.error = null;
+
+      try {
+        await deletePosts();
+        this.posts = [];
+      } catch (error) {
+        this.error = error;
+      }
     },
   },
 });
