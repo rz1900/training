@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>测试博客</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">测试博客</div>
+      <div class="counter"><span id="postCount">0</span> 条动态</div>
+    </header>
+
+    <main class="shell">
+      <section class="composer" aria-labelledby="composerTitle">
+        <h1 id="composerTitle">发布动态</h1>
+        <form id="postForm">
+          <label for="postContent">内容</label>
+          <textarea
+            id="postContent"
+            maxlength="140"
+            rows="5"
+            placeholder="分享一点新鲜事..."
+            required
+          ></textarea>
+          <div class="composerActions">
+            <span id="charCount">0/140</span>
+            <button type="submit">发布</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="feed" aria-labelledby="feedTitle">
+        <div class="feedHeader">
+          <h2 id="feedTitle">全部动态</h2>
+          <button id="clearBtn" class="ghostBtn" type="button">清空</button>
+        </div>
+        <div id="emptyState" class="emptyState">还没有动态，先发布第一条吧。</div>
+        <ul id="postList" class="postList"></ul>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
